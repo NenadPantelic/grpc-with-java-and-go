@@ -1,0 +1,3 @@
+protoc -Iproto --go_opt=module=${YOUR_MODULE} --go_out=. proto/*.proto
+
+# ${YOUR_MODULE} - the name of Go module (from go.mod)
