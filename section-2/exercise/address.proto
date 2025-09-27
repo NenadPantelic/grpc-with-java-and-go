@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-import "building.proto";
-
-message Address {
-  np.building.Building building = 1;
-  uint32 number = 2;
-}

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-import "multiple_messages_one_file.proto";
-import "section-1/account.proto";
-
-message MessageNine {
-  MessageOne one = 1;
-  Account two = 2;
-}

@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.18'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'com.google.protobuf' version '0.8.18'
+}
+
+group = 'com.np.proto'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+// download the protoc compiler
+// not needed if you have a protoc compiler
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.19.4'
+    }
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
+    implementation 'com.google.protobuf:protobuf-java:3.19.4'
+    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util
+    implementation 'com.google.protobuf:protobuf-java-util:3.19.4'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

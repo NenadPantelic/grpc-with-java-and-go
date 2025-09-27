@@ -90,8 +90,11 @@ message Account {
   - **the first tag is 0**
 
 - Comments
+
   - `//` - single line comment
   - `/**/` - multiline comments
+
+- protoc use: `protoc --java_out=java --python_out=python proto/simple.proto`
 
 ## gRPC introduction
 

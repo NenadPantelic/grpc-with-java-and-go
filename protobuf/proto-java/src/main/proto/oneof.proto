@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package example.oneof;
+
+
+message Result {
+  // the result field can be either string message or int id, if you set both, the last set
+  // overwrites the first one -> check OneMain for to see an example
+  oneof result {
+    string message = 1;
+    uint32 id = 2;
+  }
+}
