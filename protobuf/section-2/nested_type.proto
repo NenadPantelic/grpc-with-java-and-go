@@ -1,0 +1,25 @@
+syntax = "proto3"
+
+
+// it is possible to define any number of nested types
+message MessageThree {
+
+  message MessageFour {
+
+  }
+
+  enum EnumTwo {
+    ENUM_TWO_UNSPECIFIED = 0;
+    // ...
+  }
+
+  message MessageFive {
+    message MessageSix {
+
+    }
+  }
+
+  MessageFour message_four = 1;
+  EnumTwo enum_two = 2;
+  MessageFive.MessageSix message_six = 3; 
+}

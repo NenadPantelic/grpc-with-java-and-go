@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message Simple {
+  uint32 id = 1;
+}
+
+// protoc --java_out=java --python_out=python proto/simple.proto
