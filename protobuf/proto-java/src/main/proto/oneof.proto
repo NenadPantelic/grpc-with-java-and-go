@@ -6,6 +6,7 @@ package example.oneof;
 message Result {
   // the result field can be either string message or int id, if you set both, the last set
   // overwrites the first one -> check OneMain for to see an example
+  // Once you set the value of a field, it clears other fields
   oneof result {
     string message = 1;
     uint32 id = 2;
