@@ -72,11 +72,13 @@ def read_from_file(path, message):
 
 
 def to_json(message):
-    return json_format.MessageToJson(message, indent=None)
+    return json_format.MessageToJson(
+        message, indent=None, preserving_proto_field_name=True
+    )
 
 
 def from_json(message, _type):
-    return json_format.Parse(message, _type())
+    return json_format.Parse(message, _type(), ignore_unknown_fields=True)
 
 
 if __name__ == "__main__":

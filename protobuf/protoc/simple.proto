@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-package example.simple;
-
 message Simple {
   uint32 id = 1;
   bool is_simple = 2;

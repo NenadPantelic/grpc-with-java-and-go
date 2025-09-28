@@ -96,6 +96,213 @@ message Account {
 
 - protoc use: `protoc --java_out=java --python_out=python proto/simple.proto`
 
+### Data evolution
+
+- Why changing:
+  - new business requirements
+  - we do not want breaking changes
+- Backward compatible:
+  Write:
+
+```proto
+syntax = "proto3";
+
+message Account {
+  string first_name = 1;
+  string last_name = 2;
+}
+```
+
+Read:
+
+```proto
+
+syntax = "proto3";
+
+message Account {
+  string first_name = 1;
+  string last_name = 2;
+  string phone = 2;
+}
+```
+
+- if the client doesn't send the phone field, it should be deserialized with the default value for string, i.e. ""
+
+- Forward compatible
+  Write
+
+```proto
+
+syntax = "proto3";
+
+message Account {
+  string first_name = 1;
+  string last_name = 2;
+  string phone = 2;
+}
+```
+
+Read
+
+```proto
+syntax = "proto3";
+
+message Account {
+  string first_name = 1;
+  string last_name = 2;
+}
+```
+
+- The same thing here, the client will send 3 fields (phone number included) and the server will deserialize only two (first name and last name) and the phone no will be set to an empty string
+- Rules when updating protobuffs
+
+  1. do not change tags!
+  2. add new fields (old code will ignore them)
+  3. use reserved tags when removing fields (it makes the field tag unusable (useless is not the right term :-)) in the future)
+  4. before changing type: check the doc for data compatiblity; or add a new field with the type that you want (preferred)
+
+- Renaming fields:
+
+  - why: business requirement or just to make it more descriptive
+  - the name of a field only matters in your code, it doesn't matter for serde; for serde, it only looks at the field tag
+  - Example:
+  - From this proto
+
+  ```proto
+  syntax = "proto3";
+
+  message Account {
+    uint32 id = 1;
+    string first_name = 2;
+  }
+  ```
+
+  - we want to get this
+
+  ```proto
+  syntax = "proto3";
+
+  message Account {
+    uint32 id = 1;
+    string alias = 2;
+  }
+  ```
+
+  - it will work of out-of-the-box - if a client sends the `first_name`, but the server expects alias, it will deserialized into `alias` and vice-versa, if the server expects `first_name`, but the client sends `alias`, it will be deserialized into `first_name` - if the tag is the same, it works out-of-the-box
+
+- Removing a field
+
+  - we have this proto:
+
+  ```proto
+  syntax = "proto3";
+
+  message Account {
+    uint32 id = 1;
+    string first_name = 2;
+  }
+  ```
+
+  - we want to get this
+
+  ```proto
+  syntax = "proto3";
+
+  message Account {
+    reserved 2;
+    reserved "first_name"; // optional
+    uint32 id = 1;
+  }
+  ```
+
+  - `reserved 2` - means that tag 2 is reserved and it cannot be used anymore, we do that to prevent if some other field in the future gets this tag. e.g. `phone_number`, we do not end up serializing/deserializing `first_name` as `phone_number` and the opposite
+  - we can also reserve the field name, if `first_name` is reserved, it cannot be used anymore in proto (maybe for some other purpose), but this is optional
+  - when some tag is reserved, and the client sends it, it will be just skipped
+
+- Reserved fields
+
+```proto
+syntax = "proto3";
+
+message Account  {
+  reserved 2, 15, 9 to 11; // 2, 9, 10, 11 and 15
+  reserved "first_name", "last_name"; // cannot reserve a field tag and a field name on the same line
+  uint32 id = 1;
+}
+```
+
+- Default values:
+  - Good things
+    - enables forward and backward compatibility
+    - avoiding non-null values
+  - Bad things
+    - cannot differentiate missing or unset (empty string is an empty string or a missing value???)
+- Do not give any business meaning to a defalt value
+- check them with if or switch statements in your code (to return an error)
+
+### Advanced protoc
+
+- Decode bin and print tag:value pairs (works with stdin and stdout): `protoc --decode_raw` -> `cat simple.bin | protoc --decode_raw`
+- Decode message of a given type; we use the binary input with the message type and a proto file: `cat simple.bin | protoc --decode=Simple simple.proto `
+- NOTE: if the message type is defined in a package, we must use it, otherwise it won't work: `cat simple.bin | protoc --decode=simple.Simple simple.proto`; the same goes for encode
+- Encode a txt input (name:value, one pair by line) and encodes it to a proto: `cat simple.txt | protoc --encode=Simple simple.proto`
+
+```
+cat simple.bin | protoc --decode=Simple simple.proto  >> simple.txt
+cat simple.txt | protoc --encode=Simple simple.proto
+```
+
+### Advanced protobuf
+
+#### Integer types deep dive
+
+1. Range (32 or 64 bit)
+   1. int32: -2^31:2^31-1
+   2. int64: -2^63:2^63-1
+2. Signed or unsigned
+   1. uint32: 0 to 2^32-1
+   2. uint64: 0 to 2^64-1
+   - int32 and int64 accept negative values, but they are not efficient at serializing them (in a negative value, the encoded value is ten bytes long)
+   - sint32, sint64: accept negative values (less efficient at serializing positive values)
+3. Varint or not
+   - the default serializing method for integers is taking the least space possible (variable size)
+   - if we are using int32, the smaller the value of that value results in a smaller amount of bytes when it is serialized; so if we have number 4, it can be serialized with 1 byte, but if we have negative number, ten bytes are used for that which is less efficient)
+   - fixed32, sfixed32 - always 4 bytes long; or fixed64, sfixed64 - 8 bytes long
+
+- **oneof field cannot be repeated**
+- also, evolving schema is complicated with oneof (if we remove that field)
+- map field cannot be repeated; we cannot use float, double, enum and message as a key in a map field; key ordering is not guaranteed
+- Other useful types:
+  - `google/protobuf/timestamp.proto` -> `google.protobuf.Timestamp created = 1;`
+  - `google/protobuf/duration.proto` -> `google.protobuf.Duration validity = 2;`
+- In `descriptor.proto` you can find the metadata of proto files (`FileOptions`, `MessageOptions` and `Options` are useful)
+- Naming conventions (by Google; linters obey it):
+
+  - file name: lower snake case -> `my_file.proto`
+  - license should stay at the very top
+  - then `syntax`
+  - then imports, they should be ordered alphabetically
+  - then options
+  - then message, services and RPC endpoints (these should be written in Pascal case)
+  - enums should be in upper snake case
+  - for repeated fields, use plurals
+
+- Service: generic in protocol buffers and it's not designed for serialization/deserialization, but for communication
+
+  - a set of endpoints that are defining an API (contract for RPC framework like gRPC)
+  - example:
+
+  ```proto
+  service FooService {
+    rpc GetSomething(GetSomethingRequest) return (GetSomethingResponse);
+    rpc ListSomething(ListSomethingRequest) return (ListSomethingResponse);
+  }
+  ```
+
+##### Protocol Buffer internals
+
+- https://protobuf.dev/programming-guides/encoding/
+
 ## gRPC introduction
 
 - Microservices have to agree on:
@@ -137,5 +344,9 @@ message GreetResponse {
 service GreetService {
   rpc Greet(GreetRequest) returns (GreetResponse) {}
 }
+
+```
+
+```
 
 ```
