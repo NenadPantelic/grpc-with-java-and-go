@@ -347,6 +347,76 @@ service GreetService {
 
 ```
 
-```
+- More efficient (faster, binary, less CPU intensive, schema & types support)
+- Languages supported:
+  - Java
+  - Go
+  - C#
+  - C (the following are based on C)
+    - C++
+    - Python
+    - Ruby
+    - ...
+
+### HTTP/2
+
+- Good demo: `imagekit.io`
+
+- HTTP/1
+
+  - opens one TCP connection per request
+  - doesn't compress HTTP headers (bigger payload, increased latency)
+  - one request/one response (e.g. it wants to get the multipart response, it will send 3 request and get 3 responses)
+
+- HTTP/2
+  - one TCP connection (long lasting connection which used/shared by multiple requests/responses)
+  - server push - server can push multiple messages from one request from the client; client doesn't have to ask for more data, it just sends a request and waits, the server does it on its own, sends multiple messages when the data is ready
+  - multiplexing - client and server can push multiple messages in parallel over the same TCP connection
+  - headers and the data are both compressed to binary
+  - required from the browser by default
+  - one request/multiple responses (e.g. it wants to get the multipart response, it will send 1 request and get 3 responses); uses less bandwidth
+
+### Types of API in gRPC
+
+1. Unary - the client sends one request and the server returns one response
+2. Server streaming - the client sends one request and the server returns one or more responses (e.g. to get updates, get a list of nearest taxis)
+3. Client streaming - the client sends one or multiple requests and the server responds with one response (e.g. uploading or updating the information)
+4. Bidirectional streaming the client sends one or multiple requests and the server responds with one or multiple responses (e.g. uploading or updating the information)
+
+```proto
+
+service GreetService {
+
+  // unary
+  rpc Greet(GreetRequest) returns (GreetResponse) {};
+
+  // server streaming
+  rpc GreetManyTimes(GreetRequest) returns (stream GreetResponse) {};
+
+  // client streaming
+  rpc LongGreet(stream GreetRequest) returns (GreetResponse) {};
+
+  // Bidirectional streaming
+  rpc GreetEveryone(stream GreetRequest) returns (stream GreetResponse) {};
+}
 
 ```
+
+- Scalability in gRPC
+  - server: async, the main thread is not blocked
+  - client: async or blocking
+  - Google example: 10B requests/sec
+- Security
+
+  - schema based serialization (binary data, not human-readable)
+  - easy SSL certificates initialization
+  - interceptors for auth
+
+- gRPC vs REST
+  | gRPC | REST |
+  |---|---|
+  | Protocol Buffers | JSON |
+  | HTTP/2 | Usually HTTP/1 |
+  | Streaming | Unary |
+  | Bidirectional | Client -> Server |
+  | Free design | GET/POST/PUT/DELETE |
