@@ -1,21 +1,21 @@
-package greeting.server;
+package calculator;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import java.io.IOException;
 
-public class GreetingServer {
+public class CalculatorServer {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        int port = 50051;
+        int port = 10001;
 
         Server server = ServerBuilder.forPort(port)
-                .addService(new GreetingServerImpl())
+                .addService(new CalculatorServerImpl())
                 .build();
         server.start();
         System.out.println("Server started");
-        System.out.println("Listening port: " + port);
+        System.out.println("Listening on port: " + port);
 
         // when the program gets killed
         // shutdown hook works better with IntelliJ IDE

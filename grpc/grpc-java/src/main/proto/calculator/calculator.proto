@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package calculator;
+
+option java_package = "com.proto.calculator";
+option java_multiple_files = true;
+
+
+/// requests ///
+message SumRequest {
+  int64 operand_one = 1;
+  int64 operand_two = 2;
+}
+
+message PrimesRequest {
+  int64 num = 1;
+}
+
+message AvgRequest {
+  int64 num = 1;
+}
+
+/// responses ///
+message SumResponse {
+  int64 result = 1;
+}
+
+message PrimesResponse {
+  int64 value = 1;
+}
+
+message AvgResponse {
+  float value = 1;
+}
+
+/// services ///
+service CalculatorService {
+  rpc sum(SumRequest) returns (SumResponse);
+  rpc primes(PrimesRequest) returns (stream PrimesResponse);
+  rpc avg(stream AvgRequest) returns (AvgResponse);
+}
