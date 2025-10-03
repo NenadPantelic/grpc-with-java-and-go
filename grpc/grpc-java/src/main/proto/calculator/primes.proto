@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package calculator;
+
+option java_package = "com.proto.calculator";
+option java_multiple_files = true;
+
+message PrimesRequest {
+  int64 num = 1;
+}
+
+message PrimesResponse {
+  int64 value = 1;
+}

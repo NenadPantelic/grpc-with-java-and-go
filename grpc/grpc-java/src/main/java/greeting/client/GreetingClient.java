@@ -3,8 +3,7 @@ package greeting.client;
 import com.proto.greeting.GreetingRequest;
 import com.proto.greeting.GreetingResponse;
 import com.proto.greeting.GreetingServiceGrpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.util.List;
@@ -30,6 +29,7 @@ public class GreetingClient {
             case "greet-many-times" -> doGreetManyTimes(channel);
             case "long-greet" -> doLongGreet(channel);
             case "greet-everyone" -> doGreetEveryone(channel);
+            case "greet-with-deadline" -> doGreetWithDeadline(channel);
             default -> System.out.println("Invalid keyword: " + args[0]);
         }
 
@@ -137,6 +137,40 @@ public class GreetingClient {
 
         stream.onCompleted();
         latch.await(3, TimeUnit.SECONDS);
+    }
+
+    private static void doGreetWithDeadline(ManagedChannel channel) {
+        System.out.println("Entered doGreet");
+        // blocking stub (blocking calls)
+        GreetingServiceGrpc.GreetingServiceBlockingStub stub = GreetingServiceGrpc.newBlockingStub(channel);
+
+        // this one should be good because we have a deadline of 3 seconds
+        GreetingResponse greetingResponse = stub.withDeadline(Deadline.after(3, TimeUnit.SECONDS))
+                .greetWithDeadline(
+                        GreetingRequest.newBuilder()
+                                .setFirstName("Nenad")
+                                .build()
+                );
+
+        System.out.println("Greeting within deadline: " + greetingResponse.getResult());
+
+        try {
+            // this one cancels too early
+            stub.withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(
+                            GreetingRequest.newBuilder()
+                                    .setFirstName("Nenad")
+                                    .build()
+                    );
+
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == Status.Code.DEADLINE_EXCEEDED) {
+                System.out.println("Greeting deadline has been exceeded");
+            } else {
+                System.out.println("Got an exception in greet with deadline");
+                e.printStackTrace();
+            }
+        }
     }
 
 }

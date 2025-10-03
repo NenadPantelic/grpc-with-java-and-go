@@ -32,6 +32,7 @@ public class CalculatorClient {
             case "primes" -> doPrimes(channel);
             case "avg" -> doAvg(channel);
             case "max" -> doMax(channel);
+            case "sqrt" -> doSqrt(channel);
             default -> System.out.println("Invalid keyword: " + args[0]);
         }
 
@@ -138,4 +139,28 @@ public class CalculatorClient {
         latch.await(3, TimeUnit.SECONDS);
     }
 
+    private static void doSqrt(ManagedChannel channel) {
+        System.out.println("Entered doSqrt");
+        // blocking call
+        CalculatorServiceGrpc.CalculatorServiceBlockingStub stub = CalculatorServiceGrpc.newBlockingStub(channel);
+        SqrtResponse sqrtResponse = stub.sqrt(
+                SqrtRequest.newBuilder()
+                        .setNum(25)
+                        .build()
+        );
+
+        System.out.println("Sqrt(25) = " + sqrtResponse.getResult());
+
+        try {
+            SqrtResponse invalidResponse = stub.sqrt(
+                    SqrtRequest.newBuilder()
+                            .setNum(-13)
+                            .build()
+            );
+            System.out.println("Sqrt(-1) = " + invalidResponse.getResult());
+        } catch (RuntimeException e) {
+            System.out.println("Got an exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

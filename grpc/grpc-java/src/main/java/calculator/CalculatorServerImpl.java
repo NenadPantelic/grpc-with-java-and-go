@@ -1,6 +1,7 @@
 package calculator;
 
 import com.proto.calculator.*;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 public class CalculatorServerImpl extends CalculatorServiceGrpc.CalculatorServiceImplBase {
@@ -87,6 +88,25 @@ public class CalculatorServerImpl extends CalculatorServiceGrpc.CalculatorServic
                 responseObserver.onCompleted();
             }
         };
+    }
+
+    @Override
+    public void sqrt(SqrtRequest request, StreamObserver<SqrtResponse> responseObserver) {
+        int number = request.getNum();
+        if (number < 0) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("The number that was sent cannot be negative")
+                    .augmentDescription("Number: " + number)
+                    .asRuntimeException());
+            return;
+        }
+
+        responseObserver.onNext(
+                SqrtResponse.newBuilder()
+                        .setResult(Math.sqrt(request.getNum()))
+                        .build()
+        );
+        responseObserver.onCompleted();
     }
 
     private PrimesResponse buildPrimeResult(long value) {

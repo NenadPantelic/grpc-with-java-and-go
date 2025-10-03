@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package calculator;
+
+option java_package = "com.proto.calculator";
+option java_multiple_files = true;
+
+message SumRequest {
+  int64 operand_one = 1;
+  int64 operand_two = 2;
+}
+
+message SumResponse {
+  int64 result = 1;
+}
