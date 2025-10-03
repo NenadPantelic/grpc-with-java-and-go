@@ -1,8 +1,6 @@
 package calculator;
 
 import com.proto.calculator.*;
-import com.proto.greeting.GreetingRequest;
-import com.proto.greeting.GreetingResponse;
 import io.grpc.stub.StreamObserver;
 
 public class CalculatorServerImpl extends CalculatorServiceGrpc.CalculatorServiceImplBase {
@@ -64,8 +62,41 @@ public class CalculatorServerImpl extends CalculatorServiceGrpc.CalculatorServic
         };
     }
 
+    @Override
+    public StreamObserver<MaxRequest> max(StreamObserver<MaxResponse> responseObserver) {
+        return new StreamObserver<>() {
+            long max = 0L;
+
+            @Override
+            public void onNext(MaxRequest maxRequest) {
+                long num = maxRequest.getNum();
+                if (num > max) {
+                    max = num;
+                    // whenever a new max is computed, return it
+                    responseObserver.onNext(buildMaxResponse(max));
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                responseObserver.onError(t); // just gives back the error to the client
+            }
+
+            @Override
+            public void onCompleted() {
+                responseObserver.onCompleted();
+            }
+        };
+    }
+
     private PrimesResponse buildPrimeResult(long value) {
         return PrimesResponse.newBuilder()
+                .setValue(value)
+                .build();
+    }
+
+    private MaxResponse buildMaxResponse(long value) {
+        return MaxResponse.newBuilder()
                 .setValue(value)
                 .build();
     }

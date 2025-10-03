@@ -29,6 +29,7 @@ public class GreetingClient {
             case "greet" -> doGreet(channel);
             case "greet-many-times" -> doGreetManyTimes(channel);
             case "long-greet" -> doLongGreet(channel);
+            case "greet-everyone" -> doGreetEveryone(channel);
             default -> System.out.println("Invalid keyword: " + args[0]);
         }
 
@@ -60,13 +61,12 @@ public class GreetingClient {
         ).forEachRemaining(greetingResponse -> System.out.println("Greeting: " + greetingResponse.getResult()));
     }
 
+    // sends one long string with the newline separator
     private static void doLongGreet(ManagedChannel channel) throws InterruptedException {
         System.out.println("Entered doLongGreet");
 
         // asynchronous stub
         GreetingServiceGrpc.GreetingServiceStub stub = GreetingServiceGrpc.newStub(channel);
-
-        List<String> names = List.of("Nenad", "John", "Jane");
         CountDownLatch latch = new CountDownLatch(1); // to wait response from the server
 
         StreamObserver<GreetingRequest> stream = stub.longGreet(new StreamObserver<>() {
@@ -87,6 +87,46 @@ public class GreetingClient {
             }
         });
 
+        List<String> names = List.of("Nenad", "John", "Jane");
+        for (String name : names) {
+            // sending requests to the server
+            stream.onNext(GreetingRequest.newBuilder()
+                    .setFirstName(name)
+                    .build()
+            );
+        }
+
+        stream.onCompleted();
+        latch.await(3, TimeUnit.SECONDS);
+    }
+
+    // sends N requests
+    private static void doGreetEveryone(ManagedChannel channel) throws InterruptedException {
+        System.out.println("Entered doGreetEveryone");
+
+        // asynchronous stub
+        GreetingServiceGrpc.GreetingServiceStub stub = GreetingServiceGrpc.newStub(channel);
+        CountDownLatch latch = new CountDownLatch(1); // to wait response from the server
+
+        StreamObserver<GreetingRequest> stream = stub.longGreet(new StreamObserver<>() {
+            // the next response the client received - only one at a time
+            @Override
+            public void onNext(GreetingResponse greetingResponse) {
+                System.out.println(greetingResponse.getResult());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+                latch.countDown();
+            }
+        });
+
+        List<String> names = List.of("Nenad", "John", "Jane");
         for (String name : names) {
             // sending requests to the server
             stream.onNext(GreetingRequest.newBuilder()
