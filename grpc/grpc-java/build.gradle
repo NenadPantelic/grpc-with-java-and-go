@@ -36,6 +36,7 @@ dependencies {
     runtimeOnly 'io.grpc:grpc-netty-shaded:1.75.0'
     implementation 'io.grpc:grpc-protobuf:1.75.0'
     implementation 'io.grpc:grpc-stub:1.75.0'
+    implementation 'io.grpc:grpc-services:1.75.0'
 }
 
 test {
