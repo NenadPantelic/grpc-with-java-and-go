@@ -1,5 +1,6 @@
 package blog.server;
 
+import com.google.protobuf.Empty;
 import com.proto.blog.Blog;
 import com.proto.blog.BlogId;
 import com.proto.blog.BlogServiceGrpc;
@@ -25,14 +26,60 @@ public class BlogClient {
         }
     }
 
+    static void readBlog(BlogServiceGrpc.BlogServiceBlockingStub stub, BlogId blogId) {
+        try {
+            Blog blog = stub.readBlog(blogId);
+            System.out.println("Blog with id " + blogId.getId() + ": " + blog);
+        } catch (Exception e) {
+            System.out.println("Could not read a blog with id " + blogId.getId());
+            e.printStackTrace();
+        }
+    }
+
+    static void updateBlog(BlogServiceGrpc.BlogServiceBlockingStub stub, BlogId blogId) {
+        try {
+            Blog newBlogData = Blog.newBuilder()
+                    .setId(blogId.getId())
+                    .setAuthor("NP")
+                    .setContent("Hey ho")
+                    .setTitle("NenadP")
+                    .build();
+            stub.updateBlog(newBlogData);
+            System.out.println("Blog with id " + blogId.getId() + " has been updated");
+        } catch (Exception e) {
+            System.out.println("Could not update a blog with id " + blogId.getId());
+            e.printStackTrace();
+        }
+    }
+
+    static void listBlogs(BlogServiceGrpc.BlogServiceBlockingStub stub) {
+        System.out.println("Listing all blogs");
+        stub.listBlogs(Empty.getDefaultInstance()).forEachRemaining(blog -> System.out.println("Blog: " + blog));
+    }
+
+    static void deleteBlog(BlogServiceGrpc.BlogServiceBlockingStub stub, BlogId blogId) {
+        try {
+            stub.delete(blogId);
+            System.out.println("Blog with id " + blogId.getId() + " has been deleted");
+        } catch (Exception e) {
+            System.out.println("Could not delete a blog with id " + blogId.getId());
+            e.printStackTrace();
+        }
+    }
+
     public static void run(ManagedChannel channel) {
         BlogServiceGrpc.BlogServiceBlockingStub stub = BlogServiceGrpc.newBlockingStub(channel);
 
         BlogId blogId = createBlog(stub);
         if (blogId == null) {
-
+            return;
         }
 
+        readBlog(stub, blogId);
+        updateBlog(stub, blogId);
+        listBlogs(stub);
+        deleteBlog(stub, blogId);
+        readBlog(stub, blogId);
     }
 
     public static void main(String[] args) {

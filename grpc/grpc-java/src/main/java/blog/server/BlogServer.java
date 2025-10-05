@@ -16,7 +16,7 @@ public class BlogServer {
         MongoClient client = MongoClients.create("mongodb://root:root@localhost:27017/");
 
         Server server = ServerBuilder.forPort(port)
-                .addService(new BlogServerImpl(client))
+                .addService(new BlogServiceImpl(client))
                 .addService(ProtoReflectionService.newInstance())
                 .build();
 

@@ -6,7 +6,7 @@ import com.proto.greeting.GreetingServiceGrpc;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
-public class GreetingServerImpl extends GreetingServiceGrpc.GreetingServiceImplBase {
+public class GreetingServiceImpl extends GreetingServiceGrpc.GreetingServiceImplBase {
 
     @Override
     public void greet(GreetingRequest greetingRequest, StreamObserver<GreetingResponse> responseObserver) {

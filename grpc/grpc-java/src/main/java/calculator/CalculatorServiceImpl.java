@@ -4,7 +4,7 @@ import com.proto.calculator.*;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
-public class CalculatorServerImpl extends CalculatorServiceGrpc.CalculatorServiceImplBase {
+public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServiceImplBase {
 
     @Override
     public void sum(SumRequest sumRequest, StreamObserver<SumResponse> responseObserver) {

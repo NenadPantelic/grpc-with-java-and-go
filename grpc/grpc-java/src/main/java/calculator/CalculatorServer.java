@@ -12,7 +12,7 @@ public class CalculatorServer {
         int port = 10001;
 
         Server server = ServerBuilder.forPort(port)
-                .addService(new CalculatorServerImpl())
+                .addService(new CalculatorServiceImpl())
                 .addService(ProtoReflectionService.newInstance()) // with this the server is able to client some client
                 // which services and messages it has
                 // install https://github.com/ktr0731/evans and use it as a client to check how server exposes it

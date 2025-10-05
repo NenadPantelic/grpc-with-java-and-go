@@ -17,7 +17,7 @@ public class GreetingServerTLS {
                         new File("ssl/server.crt"),
                         new File("ssl/server.pem")
                 )
-                .addService(new GreetingServerImpl())
+                .addService(new GreetingServiceImpl())
                 .build();
         server.start();
         System.out.println("Server started");
