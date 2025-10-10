@@ -25,5 +25,7 @@ func main() {
 	c := proto.NewGreetServiceClient(conn)
 	fmt.Printf("Created client: %v\n", c)
 
-	doGreet(c)
+	// doGreet(c)
+	// doGreetManyTimes(c)
+	doLongGreet(c)
 }
